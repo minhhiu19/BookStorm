@@ -26,7 +26,7 @@ Hệ thống bán sách online full-stack với 3 vai trò: Khách hàng, Nhân 
 BookStorm-master/
 ├── backend/            # Spring Boot REST API
 │   └── src/main/java/com/bookstorm/
-│       ├── controller/ # 27 REST controllers (Auth, Book, Cart, Order, Admin*, ...)
+│       ├── controller/ # 28 REST controllers (Auth, Book, Cart, Order, Shipping, Admin*, ...)
 │       ├── service/
 │       ├── repository/
 │       ├── model/
@@ -72,7 +72,15 @@ spring.datasource.password=root
 
 Mặc định mật khẩu MySQL là `root`, sửa lại nếu môi trường của bạn khác.
 
-> Email (`spring.mail.username` / `spring.mail.password`) đang để giá trị mẫu — cần thay bằng tài khoản Gmail thật (kèm App Password) nếu muốn dùng tính năng quên mật khẩu / gửi thông báo qua email.
+> **Gửi email quên mật khẩu (tùy chọn):** `spring.mail.username`/`spring.mail.password` đọc qua biến môi trường `MAIL_USERNAME`/`MAIL_PASSWORD` — **không hardcode App Password thật vào `application.properties`** (file này được commit lên repo public). Để bật gửi email thật:
+> 1. Bật xác minh 2 bước (2FA) cho tài khoản Gmail, tạo App Password tại https://myaccount.google.com/apppasswords.
+> 2. Tạo file `backend/src/main/resources/application-local.properties` (đã có trong `.gitignore`, không bao giờ bị commit) với nội dung:
+>    ```properties
+>    MAIL_USERNAME=your-gmail@gmail.com
+>    MAIL_PASSWORD=xxxxxxxxxxxxxxxx
+>    ```
+>
+> Không có file này, ứng dụng vẫn chạy bình thường, chỉ riêng tính năng gửi email reset mật khẩu sẽ báo lỗi khi gọi tới.
 
 ### 3. Chạy backend
 
@@ -161,6 +169,6 @@ vnpay.return-url=http://localhost:8080/api/v1/payments/vnpay/return
 
 ## Lưu ý
 
-- File `application.properties` chứa secret (JWT secret, Cloudinary API secret, VNPay hash secret) ở dạng plain text — chỉ phù hợp cho mục đích học tập/demo, **không dùng các giá trị này cho môi trường production**.
+- File `application.properties` chứa secret (JWT secret, Cloudinary API secret, VNPay hash secret) ở dạng plain text — chỉ phù hợp cho mục đích học tập/demo, **không dùng các giá trị này cho môi trường production**. Riêng App Password Gmail **không** nằm trong file này — xem mục "Cấu hình backend" phía trên.
 - `spring.jpa.hibernate.ddl-auto=update`: schema sẽ tự đồng bộ theo entity khi backend khởi động lần đầu sau khi import `db_book.sql`.
-- Tính năng gửi email (quên mật khẩu, thông báo) cần cấu hình `spring.mail.username` và `spring.mail.password` bằng tài khoản Gmail thật + App Password.
+- Tính năng gửi email quên mật khẩu (`EmailService`, Gmail SMTP) cần App Password thật, cấu hình qua `application-local.properties` (không commit). Thông báo trong mục "Thông báo" của ứng dụng là thông báo nội bộ (in-app), không gửi qua email.
