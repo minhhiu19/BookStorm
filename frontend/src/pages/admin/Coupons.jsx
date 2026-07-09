@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { HiPlus, HiPencil, HiTrash, HiX } from 'react-icons/hi';
+import { HiPlus, HiPencil, HiTrash, HiX, HiOutlinePlay, HiOutlinePause } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -34,6 +34,7 @@ function Coupons() {
 
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [togglingId, setTogglingId] = useState(null);
 
   const fetchCoupons = useCallback(async () => {
     try {
@@ -114,6 +115,21 @@ function Coupons() {
       toast.error(error.response?.data?.message || 'Có lỗi xảy ra');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleToggleActive = async (coupon) => {
+    try {
+      setTogglingId(coupon.id);
+      await adminService.toggleCouponActive(coupon.id);
+      toast.success(
+        coupon.active === false ? 'Đã kích hoạt mã giảm giá' : 'Đã ngừng hoạt động mã giảm giá'
+      );
+      fetchCoupons();
+    } catch (error) {
+      toast.error('Không thể đổi trạng thái mã giảm giá');
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -212,6 +228,14 @@ function Coupons() {
                         </td>
                         <td>
                           <div className={styles.actions}>
+                            <button
+                              className={styles.actionBtn}
+                              onClick={() => handleToggleActive(coupon)}
+                              disabled={togglingId === coupon.id}
+                              title={coupon.active === false ? 'Kích hoạt' : 'Ngừng hoạt động'}
+                            >
+                              {coupon.active === false ? <HiOutlinePlay /> : <HiOutlinePause />}
+                            </button>
                             <button className={styles.actionBtn} onClick={() => openEditForm(coupon)} title="Sửa">
                               <HiPencil />
                             </button>
