@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { HiLockClosed, HiLockOpen, HiX } from 'react-icons/hi';
+import { HiLockClosed, HiLockOpen, HiTrash, HiX } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -17,6 +17,8 @@ function Users() {
   const [confirmTarget, setConfirmTarget] = useState(null);
   const [toggling, setToggling] = useState(false);
   const [roleChanging, setRoleChanging] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -60,6 +62,21 @@ function Users() {
       toast.error('Có lỗi xảy ra');
     } finally {
       setToggling(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!deleteTarget) return;
+    try {
+      setDeleting(true);
+      await adminService.deleteUser(deleteTarget.id);
+      toast.success('Đã xóa tài khoản');
+      setDeleteTarget(null);
+      fetchUsers();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Không thể xóa tài khoản');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -175,24 +192,34 @@ function Users() {
                         </span>
                       </td>
                       <td>
-                        <button
-                          className={`${styles.toggleBtn} ${
-                            user.enabled !== false ? styles.toggleBtnLock : styles.toggleBtnUnlock
-                          }`}
-                          onClick={() => setConfirmTarget(user)}
-                        >
-                          {user.enabled !== false ? (
-                            <>
-                              <HiLockClosed style={{ marginRight: 4, verticalAlign: 'middle' }} />
-                              Khóa
-                            </>
-                          ) : (
-                            <>
-                              <HiLockOpen style={{ marginRight: 4, verticalAlign: 'middle' }} />
-                              Mở khóa
-                            </>
-                          )}
-                        </button>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button
+                            className={`${styles.toggleBtn} ${
+                              user.enabled !== false ? styles.toggleBtnLock : styles.toggleBtnUnlock
+                            }`}
+                            onClick={() => setConfirmTarget(user)}
+                          >
+                            {user.enabled !== false ? (
+                              <>
+                                <HiLockClosed style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                                Khóa
+                              </>
+                            ) : (
+                              <>
+                                <HiLockOpen style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                                Mở khóa
+                              </>
+                            )}
+                          </button>
+                          <button
+                            className={styles.toggleBtn}
+                            style={{ color: '#e53e3e', borderColor: '#e53e3e' }}
+                            onClick={() => setDeleteTarget(user)}
+                          >
+                            <HiTrash style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                            Xóa
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -264,6 +291,40 @@ function Users() {
                   {toggling ? 'Đang xử lý...' : 'Mở khóa'}
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirm Modal */}
+      {deleteTarget && (
+        <div className={styles.modalOverlay} onClick={() => setDeleteTarget(null)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Xóa tài khoản</h2>
+              <button className={styles.modalClose} onClick={() => setDeleteTarget(null)}>
+                <HiX />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <p className={styles.confirmText}>
+                Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản của{' '}
+                <strong>{deleteTarget.fullName || deleteTarget.name}</strong>? Toàn bộ địa chỉ, giỏ
+                hàng, yêu thích, đánh giá và thông báo của tài khoản này sẽ bị xóa theo. Hành động
+                này không thể hoàn tác.
+              </p>
+              <p className={styles.confirmText} style={{ marginTop: 8, color: '#888', fontSize: 13 }}>
+                Lưu ý: tài khoản đã có đơn hàng sẽ không thể xóa — hãy dùng chức năng "Khóa" để giữ
+                lại lịch sử đơn hàng.
+              </p>
+            </div>
+            <div className={styles.modalFooter}>
+              <button className={styles.btnSecondary} onClick={() => setDeleteTarget(null)}>
+                Hủy
+              </button>
+              <button className={styles.btnDanger} onClick={handleDeleteUser} disabled={deleting}>
+                {deleting ? 'Đang xóa...' : 'Xóa vĩnh viễn'}
+              </button>
             </div>
           </div>
         </div>

@@ -5,7 +5,14 @@ import com.bookstorm.exception.BadRequestException;
 import com.bookstorm.exception.ResourceNotFoundException;
 import com.bookstorm.model.Role;
 import com.bookstorm.model.User;
+import com.bookstorm.repository.AddressRepository;
+import com.bookstorm.repository.CartItemRepository;
+import com.bookstorm.repository.CartRepository;
+import com.bookstorm.repository.NotificationRepository;
+import com.bookstorm.repository.OrderRepository;
+import com.bookstorm.repository.ReviewRepository;
 import com.bookstorm.repository.UserRepository;
+import com.bookstorm.repository.WishlistRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +26,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final OrderRepository orderRepository;
+    private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
+    private final AddressRepository addressRepository;
+    private final WishlistRepository wishlistRepository;
+    private final NotificationRepository notificationRepository;
+    private final ReviewRepository reviewRepository;
 
     public User getUserById(Long id) {
         return userRepository.findById(id)
@@ -68,6 +82,27 @@ public class UserService {
         User user = getUserById(userId);
         user.setEnabled(!user.getEnabled());
         return userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteUser(Long userId) {
+        User user = getUserById(userId);
+
+        if (orderRepository.existsByUserId(userId)) {
+            throw new BadRequestException(
+                    "Không thể xóa tài khoản đã có đơn hàng. Hãy khóa tài khoản thay vì xóa để giữ lịch sử đơn hàng.");
+        }
+
+        cartRepository.findByUserId(userId).ifPresent(cart -> {
+            cartItemRepository.bulkDeleteByCartId(cart.getId());
+            cartRepository.bulkDeleteById(cart.getId());
+        });
+        addressRepository.deleteByUserId(userId);
+        wishlistRepository.deleteByUserId(userId);
+        notificationRepository.deleteByUserId(userId);
+        reviewRepository.deleteByUserId(userId);
+
+        userRepository.delete(user);
     }
 
     public long countByRole(Role role) {

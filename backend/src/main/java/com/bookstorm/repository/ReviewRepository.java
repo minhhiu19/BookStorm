@@ -23,6 +23,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     long countByBookId(Long bookId);
 
+    void deleteByUserId(Long userId);
+
     @Query("SELECT COALESCE(AVG(r.rating), 0) FROM Review r WHERE r.book.id = :bookId AND r.visible = true")
     Double getAverageRatingByBookId(@Param("bookId") Long bookId);
 }

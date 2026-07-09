@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -81,6 +82,15 @@ public class AdminUserController {
         User user = userService.toggleUserStatus(id);
         UserResponse response = userService.toUserResponse(user);
         return ResponseEntity.ok(ApiResponse.success("User status toggled successfully", response));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(
+            @PathVariable Long id,
+            Authentication authentication) {
+        assertNotSelf(id, authentication, "You cannot delete your own account");
+        userService.deleteUser(id);
+        return ResponseEntity.ok(ApiResponse.success("User deleted successfully"));
     }
 
     private void assertNotSelf(Long targetUserId, Authentication authentication, String message) {

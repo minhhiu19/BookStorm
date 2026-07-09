@@ -183,6 +183,11 @@ const adminService = {
     return response.data;
   },
 
+  async deleteUser(id) {
+    const response = await api.delete(`/admin/users/${id}`);
+    return response.data;
+  },
+
   // ==========================================
   // Coupons
   // ==========================================
