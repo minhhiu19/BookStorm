@@ -9,6 +9,8 @@ const TABS = [
   { key: 'PENDING', label: 'Chờ xác nhận' },
   { key: 'CONFIRMED', label: 'Đã xác nhận' },
   { key: 'SHIPPING', label: 'Đang giao' },
+  { key: 'DELIVERED', label: 'Đã giao' },
+  { key: 'RETURNED', label: 'Đổi trả' },
 ];
 
 const STATUS_LABELS = {
@@ -17,6 +19,7 @@ const STATUS_LABELS = {
   SHIPPING: 'Đang giao',
   DELIVERED: 'Đã giao',
   CANCELLED: 'Đã hủy',
+  RETURNED: 'Đổi trả',
 };
 
 const formatCurrency = (amount) => {
@@ -47,7 +50,7 @@ const StaffOrders = () => {
   const [expandedDetail, setExpandedDetail] = useState(null);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [tabCounts, setTabCounts] = useState({ PENDING: 0, CONFIRMED: 0, SHIPPING: 0 });
+  const [tabCounts, setTabCounts] = useState({ PENDING: 0, CONFIRMED: 0, SHIPPING: 0, DELIVERED: 0, RETURNED: 0 });
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -118,6 +121,37 @@ const StaffOrders = () => {
       setActionLoading(orderId);
       await staffService.updateOrderStatus(orderCode, 'SHIPPING');
       toast.success('Đơn hàng đã chuyển sang giao hàng');
+      fetchOrders();
+      fetchTabCounts();
+    } catch (error) {
+      toast.error('Không thể cập nhật trạng thái đơn hàng');
+      console.error('Failed to update order:', error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDeliverOrder = async (orderCode, orderId) => {
+    try {
+      setActionLoading(orderId);
+      await staffService.updateOrderStatus(orderCode, 'DELIVERED');
+      toast.success('Đơn hàng đã giao thành công');
+      fetchOrders();
+      fetchTabCounts();
+    } catch (error) {
+      toast.error('Không thể cập nhật trạng thái đơn hàng');
+      console.error('Failed to update order:', error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReturnOrder = async (orderCode, orderId) => {
+    if (!window.confirm('Xác nhận đổi trả đơn hàng này?')) return;
+    try {
+      setActionLoading(orderId);
+      await staffService.updateOrderStatus(orderCode, 'RETURNED');
+      toast.success('Đơn hàng đã chuyển sang đổi trả');
       fetchOrders();
       fetchTabCounts();
     } catch (error) {
@@ -276,6 +310,8 @@ const StaffOrders = () => {
       case 'PENDING': return styles.statusPending;
       case 'CONFIRMED': return styles.statusConfirmed;
       case 'SHIPPING': return styles.statusShipping;
+      case 'DELIVERED': return styles.statusDelivered;
+      case 'RETURNED': return styles.statusReturned;
       default: return '';
     }
   };
@@ -450,11 +486,29 @@ const StaffOrders = () => {
                             </>
                           )}
                           {order.status === 'SHIPPING' && (
+                            <>
+                              <button
+                                className={`${styles.actionBtn} ${styles.deliverBtn}`}
+                                onClick={() => handleDeliverOrder(order.orderCode, order.id)}
+                                disabled={actionLoading === order.id}
+                              >
+                                {actionLoading === order.id ? 'Đang xử lý...' : 'Đã giao'}
+                              </button>
+                              <button
+                                className={`${styles.actionBtn} ${styles.printBtn}`}
+                                onClick={() => handlePrintOrder(order)}
+                              >
+                                In phiếu
+                              </button>
+                            </>
+                          )}
+                          {order.status === 'DELIVERED' && (
                             <button
-                              className={`${styles.actionBtn} ${styles.printBtn}`}
-                              onClick={() => handlePrintOrder(order)}
+                              className={`${styles.actionBtn} ${styles.returnBtn}`}
+                              onClick={() => handleReturnOrder(order.orderCode, order.id)}
+                              disabled={actionLoading === order.id}
                             >
-                              In phiếu
+                              {actionLoading === order.id ? 'Đang xử lý...' : 'Đổi trả'}
                             </button>
                           )}
                         </div>

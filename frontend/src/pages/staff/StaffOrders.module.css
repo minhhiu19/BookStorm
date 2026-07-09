@@ -222,6 +222,16 @@
   color: #7B1FA2;
 }
 
+.statusDelivered {
+  background-color: #E8F5E9;
+  color: #2E7D32;
+}
+
+.statusReturned {
+  background-color: #FFEBEE;
+  color: #C62828;
+}
+
 /* Actions */
 .actions {
   display: flex;
@@ -253,6 +263,24 @@
 }
 
 .shipBtn:hover {
+  opacity: 0.9;
+}
+
+.deliverBtn {
+  background-color: #2E7D32;
+  color: var(--color-bg-white);
+}
+
+.deliverBtn:hover {
+  opacity: 0.9;
+}
+
+.returnBtn {
+  background-color: #C62828;
+  color: var(--color-bg-white);
+}
+
+.returnBtn:hover {
   opacity: 0.9;
 }
 
