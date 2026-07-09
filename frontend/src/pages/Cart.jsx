@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -12,9 +12,10 @@ import {
 import toast from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
 import couponService from '../services/couponService';
+import shippingService from '../services/shippingService';
 import styles from './Cart.module.css';
 
-const FREE_SHIPPING_THRESHOLD = 500000;
+const DEFAULT_SHIPPING_CONFIG = { defaultFee: 30000, freeThreshold: 500000 };
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('vi-VN', {
@@ -73,10 +74,26 @@ const Cart = () => {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [updatingItems, setUpdatingItems] = useState({});
+  const [shippingConfig, setShippingConfig] = useState(DEFAULT_SHIPPING_CONFIG);
 
-  const shippingFee = cartTotal >= FREE_SHIPPING_THRESHOLD ? 0 : 30000;
+  const shippingFee = cartTotal >= shippingConfig.freeThreshold ? 0 : shippingConfig.defaultFee;
   const discount = appliedCoupon ? Number(appliedCoupon.discountAmount) : 0;
   const totalAmount = cartTotal + shippingFee - discount;
+
+  useEffect(() => {
+    const fetchShippingConfig = async () => {
+      try {
+        const res = await shippingService.getConfig();
+        const { defaultFee, freeThreshold } = res.data || {};
+        if (defaultFee != null && freeThreshold != null) {
+          setShippingConfig({ defaultFee: Number(defaultFee), freeThreshold: Number(freeThreshold) });
+        }
+      } catch {
+        // keep default config
+      }
+    };
+    fetchShippingConfig();
+  }, []);
 
   const handleUpdateQuantity = async (itemId, newQuantity) => {
     if (newQuantity < 1) return;
@@ -255,7 +272,7 @@ const Cart = () => {
             {shippingFee > 0 && (
               <p className={styles.shippingNote}>
                 Miễn phí vận chuyển cho đơn hàng từ{' '}
-                {formatPrice(FREE_SHIPPING_THRESHOLD)}
+                {formatPrice(shippingConfig.freeThreshold)}
               </p>
             )}
 

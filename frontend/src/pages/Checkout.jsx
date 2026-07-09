@@ -13,9 +13,10 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import userService from '../services/userService';
 import orderService from '../services/orderService';
+import shippingService from '../services/shippingService';
 import styles from './Checkout.module.css';
 
-const FREE_SHIPPING_THRESHOLD = 500000;
+const DEFAULT_SHIPPING_CONFIG = { defaultFee: 30000, freeThreshold: 500000 };
 const PROVINCES_API = 'https://provinces.open-api.vn/api';
 
 const formatPrice = (price) => {
@@ -56,9 +57,27 @@ const Checkout = () => {
   const [selectedProvinceCode, setSelectedProvinceCode] = useState('');
   const [selectedDistrictCode, setSelectedDistrictCode] = useState('');
 
-  const shippingFee = cartTotal >= FREE_SHIPPING_THRESHOLD ? 0 : 30000;
+  const [shippingConfig, setShippingConfig] = useState(DEFAULT_SHIPPING_CONFIG);
+
+  const shippingFee = cartTotal >= shippingConfig.freeThreshold ? 0 : shippingConfig.defaultFee;
   const discount = discountFromCart;
   const totalAmount = cartTotal + shippingFee - discount;
+
+  // Fetch shipping config (fee/free threshold) from backend so it matches ShippingConfigService
+  useEffect(() => {
+    const fetchShippingConfig = async () => {
+      try {
+        const res = await shippingService.getConfig();
+        const { defaultFee, freeThreshold } = res.data || {};
+        if (defaultFee != null && freeThreshold != null) {
+          setShippingConfig({ defaultFee: Number(defaultFee), freeThreshold: Number(freeThreshold) });
+        }
+      } catch {
+        // keep default config
+      }
+    };
+    fetchShippingConfig();
+  }, []);
 
   // Fetch provinces on mount
   useEffect(() => {
