@@ -27,7 +27,7 @@ const Footer = () => {
           </p>
           <div className={styles.socialLinks}>
             <a
-              href="https://facebook.com"
+              href="https://www.facebook.com/hieu.hnim03"
               className={styles.socialLink}
               target="_blank"
               rel="noopener noreferrer"
@@ -36,7 +36,7 @@ const Footer = () => {
               <FaFacebookF />
             </a>
             <a
-              href="https://instagram.com"
+              href="https://www.instagram.com/pmin_hiiu"
               className={styles.socialLink}
               target="_blank"
               rel="noopener noreferrer"
@@ -45,7 +45,7 @@ const Footer = () => {
               <FaInstagram />
             </a>
             <a
-              href="https://tiktok.com"
+              href="https://www.tiktok.com/@tuilaminhhiu"
               className={styles.socialLink}
               target="_blank"
               rel="noopener noreferrer"
@@ -54,7 +54,7 @@ const Footer = () => {
               <FaTiktok />
             </a>
             <a
-              href="https://youtube.com"
+              href="https://www.youtube.com/@phamminhhieu8029"
               className={styles.socialLink}
               target="_blank"
               rel="noopener noreferrer"
@@ -98,7 +98,7 @@ const Footer = () => {
           </div>
           <div className={styles.contactItem}>
             <HiOutlinePhone className={styles.contactIcon} />
-            <span>028 3863 2052</span>
+            <span>0918063406</span>
           </div>
           <div className={styles.contactItem}>
             <HiOutlineMail className={styles.contactIcon} />

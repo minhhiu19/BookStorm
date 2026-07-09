@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { HiOutlineHeart, HiHeart } from 'react-icons/hi';
+import { HiOutlineHeart, HiHeart, HiOutlineShoppingBag } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 import wishlistService from '../../services/wishlistService';
 import styles from './BookCard.module.css';
 
 const BookCard = ({ book, onWishlistToggle }) => {
   const [isWishlisted, setIsWishlisted] = useState(book?.isWishlisted || false);
   const [loading, setLoading] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(false);
   const { isAuthenticated } = useAuth();
+  const { addToCart } = useCart();
   const navigate = useNavigate();
 
   const {
@@ -23,6 +26,7 @@ const BookCard = ({ book, onWishlistToggle }) => {
     price,
     salePrice,
     discount,
+    stockQuantity,
   } = book || {};
 
   const bookId = id || _id;
@@ -32,6 +36,7 @@ const BookCard = ({ book, onWishlistToggle }) => {
   const displayImage = images[0]?.imageUrl || images[0]?.url || (typeof images[0] === 'string' ? images[0] : '/placeholder.jpg');
   const isOnSale = displaySale != null && displaySale < displayPrice;
   const salePercent = isOnSale ? Math.round(((displayPrice - displaySale) / displayPrice) * 100) : 0;
+  const outOfStock = stockQuantity != null && stockQuantity <= 0;
 
   const formatPrice = (value) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -69,6 +74,25 @@ const BookCard = ({ book, onWishlistToggle }) => {
     }
   };
 
+  const handleAddToCart = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      toast.error('Vui lòng đăng nhập để thêm vào giỏ hàng');
+      navigate('/login');
+      return;
+    }
+    if (outOfStock || addingToCart) return;
+    setAddingToCart(true);
+    try {
+      await addToCart(bookId, 1);
+    } catch {
+      // toast already handled in CartContext
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
   return (
     <div className={styles.card}>
       <Link to={bookUrl} className={styles.imageContainer}>
@@ -93,8 +117,13 @@ const BookCard = ({ book, onWishlistToggle }) => {
           {isWishlisted ? <HiHeart /> : <HiOutlineHeart />}
         </button>
 
-        <button className={styles.quickView}>
-          Xem nhanh
+        <button
+          className={styles.quickView}
+          onClick={handleAddToCart}
+          disabled={outOfStock || addingToCart}
+        >
+          <HiOutlineShoppingBag />
+          {outOfStock ? 'Hết hàng' : addingToCart ? 'Đang thêm...' : 'Thêm vào giỏ hàng'}
         </button>
       </Link>
 

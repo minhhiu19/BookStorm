@@ -156,7 +156,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className={styles.infoLabel}>Điện thoại</h3>
-                  <p className={styles.infoValue}>028 3863 2052</p>
+                  <p className={styles.infoValue}>0918063406</p>
                 </div>
               </div>
 
