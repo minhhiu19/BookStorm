@@ -155,6 +155,11 @@ public class OrderService {
             order.setPaymentStatus(Order.PaymentStatus.PAID);
         }
 
+        // If returned after payment was collected, refund so it stops counting as revenue
+        if (status == Order.Status.RETURNED && order.getPaymentStatus() == Order.PaymentStatus.PAID) {
+            order.setPaymentStatus(Order.PaymentStatus.REFUNDED);
+        }
+
         return orderRepository.save(order);
     }
 
