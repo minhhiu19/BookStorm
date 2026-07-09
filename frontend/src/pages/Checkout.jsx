@@ -7,6 +7,7 @@ import {
   HiOutlineCreditCard,
   HiOutlinePlus,
   HiOutlineLocationMarker,
+  HiOutlineTag,
 } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
@@ -14,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import userService from '../services/userService';
 import orderService from '../services/orderService';
 import shippingService from '../services/shippingService';
+import couponService from '../services/couponService';
 import styles from './Checkout.module.css';
 
 const DEFAULT_SHIPPING_CONFIG = { defaultFee: 30000, freeThreshold: 500000 };
@@ -34,6 +36,12 @@ const Checkout = () => {
 
   const couponFromCart = location.state?.couponCode || null;
   const discountFromCart = location.state?.discount || 0;
+
+  const [couponCode, setCouponCode] = useState(couponFromCart || '');
+  const [appliedCoupon, setAppliedCoupon] = useState(
+    couponFromCart ? { discountAmount: discountFromCart } : null
+  );
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
 
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
@@ -60,8 +68,31 @@ const Checkout = () => {
   const [shippingConfig, setShippingConfig] = useState(DEFAULT_SHIPPING_CONFIG);
 
   const shippingFee = cartTotal >= shippingConfig.freeThreshold ? 0 : shippingConfig.defaultFee;
-  const discount = discountFromCart;
+  const discount = appliedCoupon ? Number(appliedCoupon.discountAmount) : 0;
   const totalAmount = cartTotal + shippingFee - discount;
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error('Vui lòng nhập mã giảm giá');
+      return;
+    }
+    setApplyingCoupon(true);
+    try {
+      const result = await couponService.applyCoupon(couponCode.trim(), cartTotal);
+      setAppliedCoupon(result);
+      toast.success(`Áp dụng mã giảm giá thành công! Giảm ${formatPrice(result.discountAmount)}`);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Mã giảm giá không hợp lệ');
+      setAppliedCoupon(null);
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+  };
 
   // Fetch shipping config (fee/free threshold) from backend so it matches ShippingConfigService
   useEffect(() => {
@@ -211,7 +242,7 @@ const Checkout = () => {
         addressId: selectedAddressId,
         paymentMethod,
         note: note.trim() || undefined,
-        couponCode: couponFromCart || undefined,
+        couponCode: appliedCoupon ? couponCode.trim() : undefined,
       };
 
       if (showAddressForm && !selectedAddressId) {
@@ -549,6 +580,38 @@ const Checkout = () => {
                 </span>
               </div>
             )}
+
+            <div className={styles.couponSection}>
+              {appliedCoupon ? (
+                <div className={styles.couponInput}>
+                  <HiOutlineTag className={styles.couponIcon} />
+                  <span style={{ flex: 1 }}>
+                    Mã <strong>{couponCode}</strong> - Giảm {formatPrice(discount)}
+                  </span>
+                  <button className={styles.couponBtn} onClick={handleRemoveCoupon}>
+                    Hủy
+                  </button>
+                </div>
+              ) : (
+                <div className={styles.couponInput}>
+                  <HiOutlineTag className={styles.couponIcon} />
+                  <input
+                    type="text"
+                    placeholder="Mã giảm giá"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                  />
+                  <button
+                    className={styles.couponBtn}
+                    onClick={handleApplyCoupon}
+                    disabled={applyingCoupon}
+                  >
+                    {applyingCoupon ? '...' : 'Áp dụng'}
+                  </button>
+                </div>
+              )}
+            </div>
 
             <div className={styles.summaryDivider} />
 

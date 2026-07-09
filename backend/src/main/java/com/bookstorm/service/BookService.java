@@ -73,13 +73,22 @@ public class BookService {
     }
 
     @Transactional(readOnly = true)
-    public Page<BookResponse> filterBooks(Long categoryId, String author, String publisher,
+    public Page<BookResponse> filterBooks(String keyword, Long categoryId, String author, String publisher,
                                            Integer publishYear, BigDecimal minPrice,
                                            BigDecimal maxPrice, Pageable pageable) {
         Specification<Book> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             predicates.add(cb.isTrue(root.get("active")));
+
+            if (keyword != null && !keyword.isEmpty()) {
+                String likePattern = "%" + keyword.toLowerCase() + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("name")), likePattern),
+                        cb.like(cb.lower(root.get("author")), likePattern),
+                        cb.like(cb.lower(root.get("description")), likePattern)
+                ));
+            }
 
             if (categoryId != null) {
                 predicates.add(cb.equal(root.get("category").get("id"), categoryId));
@@ -257,13 +266,15 @@ public class BookService {
     }
 
     @Transactional
-    public void deleteBookImage(Long bookId, Long imageId) {
+    public String deleteBookImage(Long bookId, Long imageId) {
         BookImage image = bookImageRepository.findById(imageId)
                 .orElseThrow(() -> new ResourceNotFoundException("BookImage", "id", imageId));
         if (!image.getBook().getId().equals(bookId)) {
             throw new BadRequestException("Image does not belong to this book");
         }
+        String imageUrl = image.getImageUrl();
         bookImageRepository.delete(image);
+        return imageUrl;
     }
 
     @Transactional
@@ -286,6 +297,9 @@ public class BookService {
 
     @Transactional
     public void updateStock(Long id, Integer quantity) {
+        if (quantity == null || quantity < 0) {
+            throw new BadRequestException("Stock quantity cannot be negative");
+        }
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Book", "id", id));
         book.setStockQuantity(quantity);

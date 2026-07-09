@@ -128,7 +128,7 @@ const StaffInventory = () => {
 
     try {
       setSaving(true);
-      await staffService.updateBook(book.id, { stockQuantity: newStock });
+      await staffService.updateBookStock(book.id, newStock);
       toast.success(`Cập nhật tồn kho: ${book.name} -> ${newStock}`);
       handleCancelEdit();
       fetchBooks();

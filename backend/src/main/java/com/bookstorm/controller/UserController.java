@@ -10,6 +10,7 @@ import com.bookstorm.service.CloudinaryService;
 import com.bookstorm.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -28,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
@@ -48,9 +50,20 @@ public class UserController {
     public ResponseEntity<ApiResponse<String>> uploadAvatar(
             @RequestParam("file") MultipartFile file) throws java.io.IOException {
         Long userId = getCurrentUserId();
+        String oldAvatarUrl = userService.getUserById(userId).getAvatar();
         String avatarUrl = cloudinaryService.uploadFile(file, "avatars");
         User updatedData = User.builder().avatar(avatarUrl).build();
         userService.updateProfile(userId, updatedData);
+
+        String oldPublicId = cloudinaryService.getPublicIdFromUrl(oldAvatarUrl);
+        if (oldPublicId != null) {
+            try {
+                cloudinaryService.deleteFile(oldPublicId);
+            } catch (java.io.IOException e) {
+                log.warn("Failed to delete old avatar from Cloudinary: {}", oldPublicId, e);
+            }
+        }
+
         return ResponseEntity.ok(ApiResponse.success("Avatar updated successfully", avatarUrl));
     }
 

@@ -8,6 +8,7 @@ import com.bookstorm.service.BookService;
 import com.bookstorm.service.CloudinaryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/admin/books")
 @PreAuthorize("hasRole('ADMIN')")
@@ -89,7 +91,15 @@ public class AdminBookController {
     public ResponseEntity<ApiResponse<Void>> deleteImage(
             @PathVariable Long bookId,
             @PathVariable Long imageId) {
-        bookService.deleteBookImage(bookId, imageId);
+        String imageUrl = bookService.deleteBookImage(bookId, imageId);
+        String publicId = cloudinaryService.getPublicIdFromUrl(imageUrl);
+        if (publicId != null) {
+            try {
+                cloudinaryService.deleteFile(publicId);
+            } catch (IOException e) {
+                log.warn("Failed to delete book image from Cloudinary: {}", publicId, e);
+            }
+        }
         return ResponseEntity.ok(ApiResponse.success("Image deleted successfully"));
     }
 

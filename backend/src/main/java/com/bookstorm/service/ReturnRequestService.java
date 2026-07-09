@@ -119,7 +119,7 @@ public class ReturnRequestService {
     }
 
     @Transactional
-    public ReturnRequestResponse processReturn(Long id, boolean approved, BigDecimal refundAmount) {
+    public ReturnRequestResponse processReturn(Long id, boolean approved, BigDecimal refundAmount, String processNote) {
         ReturnRequest returnRequest = returnRequestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ReturnRequest", "id", id));
 
@@ -128,6 +128,9 @@ public class ReturnRequestService {
         }
 
         if (approved) {
+            if (refundAmount == null || refundAmount.signum() < 0) {
+                throw new BadRequestException("Refund amount cannot be negative");
+            }
             returnRequest.setStatus(ReturnRequest.Status.APPROVED);
             returnRequest.setRefundAmount(refundAmount);
 
@@ -140,6 +143,7 @@ public class ReturnRequestService {
             returnRequest.setStatus(ReturnRequest.Status.REJECTED);
         }
 
+        returnRequest.setProcessNote(processNote);
         returnRequest.setProcessedAt(LocalDateTime.now());
         return toResponse(returnRequestRepository.save(returnRequest));
     }
@@ -171,6 +175,7 @@ public class ReturnRequestService {
                 .reason(returnRequest.getReason())
                 .status(returnRequest.getStatus().name())
                 .refundAmount(returnRequest.getRefundAmount())
+                .processNote(returnRequest.getProcessNote())
                 .createdAt(returnRequest.getCreatedAt())
                 .processedAt(returnRequest.getProcessedAt())
                 .build();

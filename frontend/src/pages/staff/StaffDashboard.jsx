@@ -5,6 +5,8 @@ import {
   HiOutlineTruck,
   HiOutlineCheckCircle,
   HiOutlineClock,
+  HiOutlineRefresh,
+  HiOutlineChatAlt2,
 } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import staffService from '../../services/staffService';
@@ -101,6 +103,14 @@ const StaffDashboard = () => {
           <Link to="/staff/inventory" className={styles.actionButton}>
             <HiOutlineTruck />
             <span>Kiểm tra kho</span>
+          </Link>
+          <Link to="/staff/returns" className={styles.actionButton}>
+            <HiOutlineRefresh />
+            <span>Yêu cầu đổi/trả</span>
+          </Link>
+          <Link to="/staff/support" className={styles.actionButton}>
+            <HiOutlineChatAlt2 />
+            <span>Hỗ trợ khách hàng</span>
           </Link>
         </div>
       </div>

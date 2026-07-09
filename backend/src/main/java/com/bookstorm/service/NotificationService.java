@@ -5,6 +5,7 @@ import com.bookstorm.dto.notification.BulkNotificationRequest;
 import com.bookstorm.dto.notification.NotificationResponse;
 import com.bookstorm.dto.notification.SendNotificationRequest;
 import com.bookstorm.model.Role;
+import com.bookstorm.exception.BadRequestException;
 import com.bookstorm.exception.ResourceNotFoundException;
 import com.bookstorm.model.Notification;
 import com.bookstorm.model.User;
@@ -88,8 +89,18 @@ public class NotificationService {
 
     @Transactional
     public NotificationResponse sendNotification(SendNotificationRequest request) {
+        Long userId = request.getUserId();
+        if (userId == null) {
+            if (request.getUserEmail() == null || request.getUserEmail().isBlank()) {
+                throw new BadRequestException("Either userId or userEmail is required");
+            }
+            User user = userRepository.findByEmail(request.getUserEmail())
+                    .orElseThrow(() -> new ResourceNotFoundException("User", "email", request.getUserEmail()));
+            userId = user.getId();
+        }
+
         Notification notification = createNotification(
-                request.getUserId(),
+                userId,
                 request.getTitle(),
                 request.getMessage(),
                 Notification.Type.valueOf(request.getType())

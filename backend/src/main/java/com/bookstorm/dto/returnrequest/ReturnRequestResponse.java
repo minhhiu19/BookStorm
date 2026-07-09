@@ -21,6 +21,7 @@ public class ReturnRequestResponse {
     private String reason;
     private String status;
     private BigDecimal refundAmount;
+    private String processNote;
     private LocalDateTime createdAt;
     private LocalDateTime processedAt;
 }

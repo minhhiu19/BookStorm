@@ -1,5 +1,6 @@
 package com.bookstorm.service;
 
+import com.bookstorm.exception.BadRequestException;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +17,20 @@ public class CloudinaryService {
     private final Cloudinary cloudinary;
 
     public String uploadFile(MultipartFile file, String folder) throws IOException {
-        Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(),
-                ObjectUtils.asMap(
-                        "folder", "wearora/" + folder,
-                        "resource_type", "auto"
-                ));
-        return (String) uploadResult.get("secure_url");
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new BadRequestException("Only image files are allowed");
+        }
+        try {
+            Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                    ObjectUtils.asMap(
+                            "folder", "wearora/" + folder,
+                            "resource_type", "auto"
+                    ));
+            return (String) uploadResult.get("secure_url");
+        } catch (IOException e) {
+            throw new BadRequestException("Failed to upload image. Please try again.");
+        }
     }
 
     public String uploadFromUrl(String imageUrl, String folder) throws IOException {

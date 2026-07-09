@@ -138,7 +138,7 @@ function Reviews() {
                       <td>
                         <button
                           className={`${styles.toggleSwitch} ${
-                            review.visible !== false && review.status !== 'REJECTED' ? styles.active : ''
+                            review.visible !== false ? styles.active : ''
                           }`}
                           onClick={() => handleToggleVisibility(review)}
                           title={review.visible !== false ? 'Đang hiển thị' : 'Đang ẩn'}

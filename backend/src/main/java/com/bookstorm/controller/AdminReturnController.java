@@ -38,8 +38,9 @@ public class AdminReturnController {
     public ResponseEntity<ApiResponse<ReturnRequestResponse>> processReturn(
             @PathVariable Long id,
             @RequestParam boolean approved,
-            @RequestParam(required = false) BigDecimal refundAmount) {
-        ReturnRequestResponse response = returnRequestService.processReturn(id, approved, refundAmount);
+            @RequestParam(required = false) BigDecimal refundAmount,
+            @RequestParam(required = false) String processNote) {
+        ReturnRequestResponse response = returnRequestService.processReturn(id, approved, refundAmount, processNote);
         return ResponseEntity.ok(ApiResponse.success("Return request processed", response));
     }
 }

@@ -44,6 +44,9 @@ public class ReturnRequest {
     @Column(precision = 12, scale = 2)
     private BigDecimal refundAmount;
 
+    @Column(name = "process_note", columnDefinition = "TEXT")
+    private String processNote;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

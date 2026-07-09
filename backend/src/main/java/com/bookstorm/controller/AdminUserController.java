@@ -3,6 +3,7 @@ package com.bookstorm.controller;
 import com.bookstorm.dto.common.ApiResponse;
 import com.bookstorm.dto.common.PageResponse;
 import com.bookstorm.dto.user.UserResponse;
+import com.bookstorm.exception.BadRequestException;
 import com.bookstorm.model.Role;
 import com.bookstorm.model.User;
 import com.bookstorm.service.UserService;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -62,7 +64,9 @@ public class AdminUserController {
     @PutMapping("/{id}/role")
     public ResponseEntity<ApiResponse<UserResponse>> updateUserRole(
             @PathVariable Long id,
-            @RequestBody Map<String, String> body) {
+            @RequestBody Map<String, String> body,
+            Authentication authentication) {
+        assertNotSelf(id, authentication, "You cannot change your own role");
         Role role = Role.valueOf(body.get("role").toUpperCase());
         User user = userService.updateUserRole(id, role);
         UserResponse response = userService.toUserResponse(user);
@@ -70,9 +74,19 @@ public class AdminUserController {
     }
 
     @PutMapping("/{id}/toggle-status")
-    public ResponseEntity<ApiResponse<UserResponse>> toggleUserStatus(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<UserResponse>> toggleUserStatus(
+            @PathVariable Long id,
+            Authentication authentication) {
+        assertNotSelf(id, authentication, "You cannot lock/unlock your own account");
         User user = userService.toggleUserStatus(id);
         UserResponse response = userService.toUserResponse(user);
         return ResponseEntity.ok(ApiResponse.success("User status toggled successfully", response));
+    }
+
+    private void assertNotSelf(Long targetUserId, Authentication authentication, String message) {
+        User currentUser = userService.getUserByEmail(authentication.getName());
+        if (currentUser.getId().equals(targetUserId)) {
+            throw new BadRequestException(message);
+        }
     }
 }

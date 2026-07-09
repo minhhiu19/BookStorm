@@ -78,6 +78,7 @@ public class BookController {
 
     @GetMapping("/filter")
     public ResponseEntity<ApiResponse<PageResponse<BookResponse>>> filterBooks(
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String author,
             @RequestParam(required = false) String publisher,
@@ -89,7 +90,7 @@ public class BookController {
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
         Pageable pageable = buildPageable(page, size, sort);
         Page<BookResponse> bookPage = bookService.filterBooks(
-                categoryId, author, publisher, publishYear, minPrice, maxPrice, pageable);
+                keyword, categoryId, author, publisher, publishYear, minPrice, maxPrice, pageable);
         return ResponseEntity.ok(ApiResponse.success(PageResponse.from(bookPage)));
     }
 

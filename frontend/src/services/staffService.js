@@ -43,6 +43,11 @@ const staffService = {
     return response.data;
   },
 
+  async updateBookStock(id, stockQuantity) {
+    const response = await api.put(`/staff/books/${id}/stock`, { stockQuantity });
+    return response.data;
+  },
+
   // Returns
   async getReturnRequests(page = 0, size = 20, status = null) {
     const params = { page, size };
@@ -51,8 +56,8 @@ const staffService = {
     return response.data;
   },
 
-  async processReturn(id, approved, refundAmount) {
-    const response = await api.put(`/staff/returns/${id}/process`, { approved, refundAmount });
+  async processReturn(id, approved, refundAmount, processNote) {
+    const response = await api.put(`/staff/returns/${id}/process`, { approved, refundAmount, processNote });
     return response.data;
   },
 

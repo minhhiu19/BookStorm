@@ -65,6 +65,9 @@ function Users() {
 
   const handleRoleChange = async (userId, newRole) => {
     const roleLabels = { CUSTOMER: 'Khách hàng', STAFF: 'Nhân viên', ADMIN: 'Quản trị viên' };
+    if (!window.confirm(`Đổi vai trò người dùng này thành "${roleLabels[newRole]}"?`)) {
+      return;
+    }
     try {
       setRoleChanging(userId);
       await adminService.updateUserRole(userId, newRole);

@@ -21,6 +21,7 @@ const bookService = {
     },
     filterBooks: (filters, page = 0, size = 12, sort = 'createdAt,desc') => {
         const params = new URLSearchParams();
+        if (filters.keyword) params.append('keyword', filters.keyword);
         if (filters.categoryId) params.append('categoryId', filters.categoryId);
         if (filters.author) params.append('author', filters.author);
         if (filters.publisher) params.append('publisher', filters.publisher);

@@ -8,6 +8,7 @@ import com.bookstorm.service.CategoryService;
 import com.bookstorm.service.CloudinaryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/admin/categories")
 @RequiredArgsConstructor
@@ -70,9 +72,20 @@ public class AdminCategoryController {
     public ResponseEntity<ApiResponse<CategoryResponse>> uploadCategoryImage(
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file) throws IOException {
+        String oldImageUrl = categoryService.getCategoryResponseById(id).getImageUrl();
         String imageUrl = cloudinaryService.uploadFile(file, "categories");
         categoryService.updateCategoryImage(id, imageUrl);
         CategoryResponse response = categoryService.getCategoryResponseById(id);
+
+        String oldPublicId = cloudinaryService.getPublicIdFromUrl(oldImageUrl);
+        if (oldPublicId != null) {
+            try {
+                cloudinaryService.deleteFile(oldPublicId);
+            } catch (IOException e) {
+                log.warn("Failed to delete old category image from Cloudinary: {}", oldPublicId, e);
+            }
+        }
+
         return ResponseEntity.ok(ApiResponse.success("Image uploaded successfully", response));
     }
 

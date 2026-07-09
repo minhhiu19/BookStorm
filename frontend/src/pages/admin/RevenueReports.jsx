@@ -131,9 +131,9 @@ function RevenueReports() {
             value={selectedYear}
             onChange={handleYearChange}
           >
-            <option value={2024}>2024</option>
-            <option value={2025}>2025</option>
-            <option value={2026}>2026</option>
+            {Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i).map((year) => (
+              <option key={year} value={year}>{year}</option>
+            ))}
           </select>
         </div>
 

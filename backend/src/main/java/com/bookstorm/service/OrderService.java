@@ -190,8 +190,15 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public Page<OrderResponse> getAllOrderResponses(Pageable pageable, String status) {
+        return getAllOrderResponses(pageable, status, null);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<OrderResponse> getAllOrderResponses(Pageable pageable, String status, String search) {
         Page<Order> orders;
-        if (status != null && !status.isEmpty()) {
+        if (search != null && !search.isBlank()) {
+            orders = orderRepository.search(search.trim(), pageable);
+        } else if (status != null && !status.isEmpty()) {
             orders = orderRepository.findByStatus(Order.Status.valueOf(status.toUpperCase()), pageable);
         } else {
             orders = orderRepository.findAll(pageable);

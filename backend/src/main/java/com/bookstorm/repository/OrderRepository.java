@@ -35,4 +35,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT DATE(o.createdAt) as date, SUM(o.finalAmount) as total FROM Order o WHERE o.paymentStatus = 'PAID' AND o.createdAt BETWEEN :start AND :end GROUP BY DATE(o.createdAt)")
     List<Object[]> getDailyRevenue(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT o FROM Order o WHERE " +
+           "LOWER(o.orderCode) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(o.user.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(o.shippingAddress) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Order> search(@Param("keyword") String keyword, Pageable pageable);
 }

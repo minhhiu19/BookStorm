@@ -1,5 +1,6 @@
 package com.bookstorm.controller;
 
+import com.bookstorm.dto.book.BookRequest;
 import com.bookstorm.dto.book.BookResponse;
 import com.bookstorm.dto.common.ApiResponse;
 import com.bookstorm.dto.common.PageResponse;
@@ -104,6 +105,14 @@ public class StaffController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @PutMapping("/books/{id}")
+    public ResponseEntity<ApiResponse<BookResponse>> updateBook(
+            @PathVariable Long id,
+            @Valid @RequestBody BookRequest request) {
+        BookResponse response = bookService.updateBook(id, request);
+        return ResponseEntity.ok(ApiResponse.success("Book updated successfully", response));
+    }
+
     @PutMapping("/books/{id}/stock")
     public ResponseEntity<ApiResponse<BookResponse>> updateBookStock(
             @PathVariable Long id,
@@ -136,7 +145,8 @@ public class StaffController {
         java.math.BigDecimal refundAmount = data.get("refundAmount") != null
                 ? new java.math.BigDecimal(data.get("refundAmount").toString())
                 : java.math.BigDecimal.ZERO;
-        com.bookstorm.dto.returnrequest.ReturnRequestResponse response = returnRequestService.processReturn(id, approved, refundAmount);
+        String processNote = data.get("processNote") != null ? data.get("processNote").toString() : null;
+        com.bookstorm.dto.returnrequest.ReturnRequestResponse response = returnRequestService.processReturn(id, approved, refundAmount, processNote);
         return ResponseEntity.ok(ApiResponse.success(approved ? "Return approved" : "Return rejected", response));
     }
 
@@ -148,7 +158,7 @@ public class StaffController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String search) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<OrderResponse> orderPage = orderService.getAllOrderResponses(pageable, null);
+        Page<OrderResponse> orderPage = orderService.getAllOrderResponses(pageable, null, search);
         return ResponseEntity.ok(ApiResponse.success(PageResponse.from(orderPage)));
     }
 }

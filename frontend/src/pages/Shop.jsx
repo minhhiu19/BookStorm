@@ -29,6 +29,7 @@ function Shop() {
   // Filter state from URL
   const currentPage = parseInt(searchParams.get('page') || '0', 10);
   const currentSort = searchParams.get('sort') || 'createdAt,desc';
+  const keywordFilter = searchParams.get('keyword') || '';
   const selectedCategories = searchParams.get('category')?.split(',').filter(Boolean) || [];
   const authorFilter = searchParams.get('author') || '';
   const publisherFilter = searchParams.get('publisher') || '';
@@ -41,6 +42,7 @@ function Shop() {
   const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice);
   const [localAuthor, setLocalAuthor] = useState(authorFilter);
   const [localPublisher, setLocalPublisher] = useState(publisherFilter);
+  const [localKeyword, setLocalKeyword] = useState(keywordFilter);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -58,6 +60,7 @@ function Shop() {
     setLoading(true);
     try {
       const filters = {};
+      if (keywordFilter) filters.keyword = keywordFilter;
       if (selectedCategories.length) filters.categoryId = selectedCategories.join(',');
       if (authorFilter) filters.author = authorFilter;
       if (publisherFilter) filters.publisher = publisherFilter;
@@ -95,7 +98,7 @@ function Shop() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, currentSort, selectedCategories.join(','), authorFilter, publisherFilter, publishYearFilter, minPrice, maxPrice]);
+  }, [currentPage, currentSort, keywordFilter, selectedCategories.join(','), authorFilter, publisherFilter, publishYearFilter, minPrice, maxPrice]);
 
   useEffect(() => {
     fetchBooks();
@@ -107,6 +110,7 @@ function Shop() {
     setLocalMaxPrice(maxPrice);
     setLocalAuthor(authorFilter);
     setLocalPublisher(publisherFilter);
+    setLocalKeyword(keywordFilter);
   }, [searchParams]);
 
   const updateSearchParams = (updates) => {
@@ -128,6 +132,15 @@ function Shop() {
       ? currentValues.filter((i) => i !== item)
       : [...currentValues, item];
     updateSearchParams({ [filterKey]: newValues });
+  };
+
+  // Keyword search (tên sách / tác giả / mô tả)
+  const handleKeywordChange = (e) => {
+    setLocalKeyword(e.target.value);
+  };
+
+  const handleKeywordApply = () => {
+    updateSearchParams({ keyword: localKeyword });
   };
 
   // Author filter with debounce via onChange
@@ -166,6 +179,7 @@ function Shop() {
     setLocalMaxPrice('');
     setLocalAuthor('');
     setLocalPublisher('');
+    setLocalKeyword('');
     setSearchParams({ sort: currentSort });
     setMobileFiltersOpen(false);
   };
@@ -189,6 +203,7 @@ function Shop() {
   };
 
   const hasActiveFilters =
+    keywordFilter ||
     selectedCategories.length > 0 ||
     authorFilter ||
     publisherFilter ||
@@ -237,6 +252,25 @@ function Shop() {
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
+              </button>
+            </div>
+
+            {/* Keyword Search */}
+            <div className={styles.filterGroup}>
+              <h4 className={styles.filterTitle}>Từ khóa</h4>
+              <div className={styles.priceInputs}>
+                <input
+                  type="text"
+                  placeholder="Tên sách, tác giả, mô tả..."
+                  value={localKeyword}
+                  onChange={handleKeywordChange}
+                  onKeyDown={(e) => e.key === 'Enter' && handleKeywordApply()}
+                  className={styles.priceInput}
+                  style={{ flex: 1 }}
+                />
+              </div>
+              <button className={styles.priceApplyBtn} onClick={handleKeywordApply}>
+                Tìm kiếm
               </button>
             </div>
 

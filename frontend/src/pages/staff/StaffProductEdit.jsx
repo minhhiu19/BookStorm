@@ -86,7 +86,9 @@ const StaffProductEdit = () => {
       const updateData = {
         name: formData.name,
         description: formData.description,
+        categoryId: book.categoryId,
         basePrice: parseFloat(formData.basePrice),
+        stockQuantity: formData.stockQuantity !== '' ? parseInt(formData.stockQuantity, 10) : book.stockQuantity,
         author: formData.author,
         publisher: formData.publisher,
         isbn: formData.isbn,
@@ -102,10 +104,6 @@ const StaffProductEdit = () => {
 
       if (formData.pageCount) {
         updateData.pageCount = parseInt(formData.pageCount, 10);
-      }
-
-      if (formData.stockQuantity !== '') {
-        updateData.stockQuantity = parseInt(formData.stockQuantity, 10);
       }
 
       await staffService.updateBook(id, updateData);

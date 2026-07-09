@@ -27,7 +27,7 @@ function Banners() {
   const fetchBanners = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await adminService.getBanners(0, 50);
+      const res = await adminService.getBanners(0, 200);
       const data = res.data || res;
       const items = data.content || data || [];
       items.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));

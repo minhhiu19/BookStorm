@@ -102,6 +102,9 @@ public class PaymentService {
     @Transactional
     public Payment processVnpayReturn(Map<String, String> vnpParams) {
         String vnpSecureHash = vnpParams.get("vnp_SecureHash");
+        if (vnpSecureHash == null || vnpParams.get("vnp_TxnRef") == null) {
+            throw new BadRequestException("Missing required VNPay callback parameters");
+        }
 
         // Remove hash params for verification
         SortedMap<String, String> sortedParams = new TreeMap<>();
@@ -133,6 +136,17 @@ public class PaymentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Payment", "transactionId", vnpTxnRef));
 
         Order order = payment.getOrder();
+
+        // Verify the amount VNPay charged matches what we actually created the payment for,
+        // to guard against a tampered/replayed callback with a stale but validly-signed amount.
+        String vnpAmountStr = vnpParams.get("vnp_Amount");
+        long expectedAmount = payment.getAmount().multiply(BigDecimal.valueOf(100)).longValue();
+        if (vnpAmountStr == null || Long.parseLong(vnpAmountStr) != expectedAmount) {
+            payment.setStatus(Payment.Status.FAILED);
+            payment.setVnpayResponseCode(responseCode);
+            paymentRepository.save(payment);
+            throw new BadRequestException("VNPay callback amount does not match order amount");
+        }
 
         if ("00".equals(responseCode)) {
             // Payment successful

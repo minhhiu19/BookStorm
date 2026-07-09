@@ -403,6 +403,56 @@
   margin: 16px 0;
 }
 
+.couponSection {
+  margin: 4px 0;
+}
+
+.couponInput {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.couponIcon {
+  font-size: 18px;
+  color: var(--color-text-light);
+  margin-left: 12px;
+  flex-shrink: 0;
+}
+
+.couponInput input {
+  border: none;
+  padding: 10px 12px;
+  font-size: 13px;
+  flex: 1;
+  min-width: 0;
+}
+
+.couponInput input:focus {
+  box-shadow: none;
+}
+
+.couponBtn {
+  padding: 10px 16px;
+  background-color: var(--color-text);
+  color: var(--color-bg-white);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+}
+
+.couponBtn:hover {
+  background-color: var(--color-accent);
+}
+
 .summaryRow {
   display: flex;
   justify-content: space-between;
