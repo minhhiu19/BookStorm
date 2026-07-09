@@ -30,6 +30,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService customUserDetailsService;
+    private final EmailService emailService;
 
     private final Map<String, String> resetTokenStore = new ConcurrentHashMap<>();
 
@@ -93,7 +94,7 @@ public class AuthService {
         String resetToken = UUID.randomUUID().toString();
         resetTokenStore.put(resetToken, email);
 
-        // In production, send email with reset link containing the token
+        emailService.sendPasswordResetEmail(email, resetToken);
         return resetToken;
     }
 
