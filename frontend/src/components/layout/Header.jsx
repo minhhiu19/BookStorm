@@ -20,7 +20,7 @@ import styles from './Header.module.css';
 const NAV_LINKS = [
   { to: '/', label: 'Trang chủ' },
   { to: '/shop', label: 'Cửa hàng' },
-  { to: '/shop?tab=categories', label: 'Thể loại' },
+  { to: '/categories', label: 'Thể loại' },
   { to: '/contact', label: 'Liên hệ' },
 ];
 
