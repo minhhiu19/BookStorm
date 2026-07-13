@@ -83,8 +83,9 @@ public class OrderService {
 
             orderItems.add(orderItem);
 
-            // Decrease stock
+            // Decrease stock, count towards sold total
             book.setStockQuantity(book.getStockQuantity() - cartItem.getQuantity());
+            book.setSoldCount(book.getSoldCount() + cartItem.getQuantity());
             bookRepository.save(book);
         }
 
@@ -174,11 +175,12 @@ public class OrderService {
 
         order.setStatus(Order.Status.CANCELLED);
 
-        // Restore stock
+        // Restore stock, remove from sold total
         for (OrderItem item : order.getOrderItems()) {
             if (item.getBook() != null) {
                 Book book = item.getBook();
                 book.setStockQuantity(book.getStockQuantity() + item.getQuantity());
+                book.setSoldCount(Math.max(0, book.getSoldCount() - item.getQuantity()));
                 bookRepository.save(book);
             }
         }

@@ -43,6 +43,10 @@ public class Book {
     @Column(nullable = false)
     private Integer stockQuantity;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer soldCount = 0;
+
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal basePrice;
 
