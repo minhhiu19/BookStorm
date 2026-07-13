@@ -59,6 +59,7 @@ import StaffInventory from './pages/staff/StaffInventory';
 import StaffProductEdit from './pages/staff/StaffProductEdit';
 import StaffReturns from './pages/staff/StaffReturns';
 import StaffSupport from './pages/staff/StaffSupport';
+import StaffShipping from './pages/staff/StaffShipping';
 
 // Components
 import PrivateRoute from './components/common/PrivateRoute';
@@ -142,6 +143,7 @@ function App() {
               <Route path="/staff/orders" element={<StaffOrders />} />
               <Route path="/staff/inventory" element={<StaffInventory />} />
               <Route path="/staff/books/:id/edit" element={<StaffProductEdit />} />
+              <Route path="/staff/shipping" element={<StaffShipping />} />
               <Route path="/staff/returns" element={<StaffReturns />} />
               <Route path="/staff/support" element={<StaffSupport />} />
             </Route>

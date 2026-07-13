@@ -179,6 +179,7 @@ public class ShippingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Shipping", "orderId", orderId));
     }
 
+    @Transactional(readOnly = true)
     public ShippingResponse getShippingByOrder(String orderCode) {
         Order order = orderRepository.findByOrderCode(orderCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Order", "orderCode", orderCode));

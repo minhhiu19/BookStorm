@@ -13,6 +13,7 @@ import {
   HiOutlineRefresh,
   HiOutlineChatAlt2,
   HiOutlineBookOpen,
+  HiOutlineTruck,
 } from 'react-icons/hi';
 import { useAuth } from '../../context/AuthContext';
 import styles from './AdminLayout.module.css';
@@ -21,6 +22,7 @@ const STAFF_NAV = [
   { to: '/staff/dashboard', icon: HiOutlineChartBar, label: 'Tổng quan', end: true },
   { to: '/staff/orders', icon: HiOutlineClipboardList, label: 'Đơn hàng' },
   { to: '/staff/inventory', icon: HiOutlineBookOpen, label: 'Kho sách' },
+  { to: '/staff/shipping', icon: HiOutlineTruck, label: 'Vận chuyển' },
   { to: '/staff/returns', icon: HiOutlineRefresh, label: 'Đổi/trả' },
   { to: '/staff/support', icon: HiOutlineChatAlt2, label: 'Hỗ trợ KH' },
 ];

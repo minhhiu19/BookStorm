@@ -61,6 +61,22 @@ const staffService = {
     return response.data;
   },
 
+  // Shipping (order operations only, no fee config)
+  async getShippingByOrder(orderCode) {
+    const response = await api.get(`/staff/shipping/order/${orderCode}`);
+    return response.data;
+  },
+
+  async createShipping(orderCode, data) {
+    const response = await api.post(`/staff/shipping/order/${orderCode}`, data);
+    return response.data;
+  },
+
+  async updateShippingStatus(id, data) {
+    const response = await api.put(`/staff/shipping/${id}/status`, data);
+    return response.data;
+  },
+
   // Support
   async getSupportOrders(page = 0, size = 20, search = '') {
     const params = { page, size };

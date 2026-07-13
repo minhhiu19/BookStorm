@@ -6,18 +6,23 @@ import com.bookstorm.dto.common.ApiResponse;
 import com.bookstorm.dto.common.PageResponse;
 import com.bookstorm.dto.order.OrderResponse;
 import com.bookstorm.dto.order.UpdateOrderStatusRequest;
+import com.bookstorm.dto.shipping.ShippingRequest;
+import com.bookstorm.dto.shipping.ShippingResponse;
 import com.bookstorm.model.Order;
 import com.bookstorm.service.BookService;
 import com.bookstorm.service.OrderService;
+import com.bookstorm.service.ShippingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,6 +37,7 @@ public class StaffController {
     private final OrderService orderService;
     private final BookService bookService;
     private final com.bookstorm.service.ReturnRequestService returnRequestService;
+    private final ShippingService shippingService;
 
     // ==================== Dashboard ====================
 
@@ -148,6 +154,32 @@ public class StaffController {
         String processNote = data.get("processNote") != null ? data.get("processNote").toString() : null;
         com.bookstorm.dto.returnrequest.ReturnRequestResponse response = returnRequestService.processReturn(id, approved, refundAmount, processNote);
         return ResponseEntity.ok(ApiResponse.success(approved ? "Return approved" : "Return rejected", response));
+    }
+
+    // ==================== Shipping (order operations only, no fee config) ====================
+
+    @GetMapping("/shipping/order/{orderCode}")
+    public ResponseEntity<ApiResponse<ShippingResponse>> getShippingByOrder(
+            @PathVariable String orderCode) {
+        ShippingResponse response = shippingService.getShippingByOrder(orderCode);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PostMapping("/shipping/order/{orderCode}")
+    public ResponseEntity<ApiResponse<ShippingResponse>> createShipping(
+            @PathVariable String orderCode,
+            @Valid @RequestBody ShippingRequest request) {
+        ShippingResponse response = shippingService.createShipping(orderCode, request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Shipping created successfully", response));
+    }
+
+    @PutMapping("/shipping/{id}/status")
+    public ResponseEntity<ApiResponse<ShippingResponse>> updateShippingStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody ShippingRequest request) {
+        ShippingResponse response = shippingService.updateShippingStatus(id, request);
+        return ResponseEntity.ok(ApiResponse.success("Shipping status updated", response));
     }
 
     // ==================== Support ====================
