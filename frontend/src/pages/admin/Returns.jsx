@@ -71,10 +71,15 @@ function Returns() {
 
   const handleProcess = async (status) => {
     if (!selectedReturn) return;
+    const approved = status === 'APPROVED';
+    const amount = approved ? (parseFloat(refundAmount) || 0) : 0;
+    if (approved && amount < 0) {
+      toast.error('Số tiền hoàn không được âm');
+      return;
+    }
     try {
       setProcessing(true);
-      const approved = status === 'APPROVED';
-      await adminService.processReturn(selectedReturn.id, approved);
+      await adminService.processReturn(selectedReturn.id, approved, amount, processNote);
       toast.success(approved ? 'Đã duyệt yêu cầu đổi/trả' : 'Đã từ chối yêu cầu');
       closeModal();
       fetchReturns();
@@ -253,6 +258,7 @@ function Returns() {
                     <input
                       className={styles.formInput}
                       type="number"
+                      min="0"
                       value={refundAmount}
                       onChange={(e) => setRefundAmount(e.target.value)}
                       placeholder="0"

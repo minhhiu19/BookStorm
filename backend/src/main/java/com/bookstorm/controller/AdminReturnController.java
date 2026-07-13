@@ -12,11 +12,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/admin/returns")
@@ -28,18 +30,22 @@ public class AdminReturnController {
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<ReturnRequestResponse>>> getAllReturns(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        PageResponse<ReturnRequestResponse> response = returnRequestService.getAllReturns(pageable);
+        PageResponse<ReturnRequestResponse> response = returnRequestService.getAllReturns(pageable, status);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @PutMapping("/{id}/process")
     public ResponseEntity<ApiResponse<ReturnRequestResponse>> processReturn(
             @PathVariable Long id,
-            @RequestParam boolean approved,
-            @RequestParam(required = false) BigDecimal refundAmount,
-            @RequestParam(required = false) String processNote) {
+            @RequestBody Map<String, Object> data) {
+        boolean approved = Boolean.TRUE.equals(data.get("approved"));
+        BigDecimal refundAmount = data.get("refundAmount") != null
+                ? new BigDecimal(data.get("refundAmount").toString())
+                : BigDecimal.ZERO;
+        String processNote = data.get("processNote") != null ? data.get("processNote").toString() : null;
         ReturnRequestResponse response = returnRequestService.processReturn(id, approved, refundAmount, processNote);
         return ResponseEntity.ok(ApiResponse.success("Return request processed", response));
     }

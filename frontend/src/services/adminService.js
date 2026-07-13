@@ -328,9 +328,10 @@ const adminService = {
     return response.data;
   },
 
-  async processReturn(id, approved, refundAmount = null) {
+  async processReturn(id, approved, refundAmount = null, processNote = null) {
     const data = { approved };
     if (refundAmount !== null) data.refundAmount = refundAmount;
+    if (processNote !== null) data.processNote = processNote;
     const response = await api.put(`/admin/returns/${id}/process`, data);
     return response.data;
   },
